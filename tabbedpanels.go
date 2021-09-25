@@ -81,9 +81,25 @@ func (t *TabbedPanels) AddTab(name, label string, item Primitive) {
 	t.updateAll()
 }
 
+func (t *TabbedPanels) InsertTab(name, label string, item Primitive, index int) {
+	t.Lock()
+	t.tabLabels[name] = label
+	t.Unlock()
+
+	t.panels.InsertPanel(name, item, true, false, index)
+
+	t.updateAll()
+}
+
 // RemoveTab removes a tab.
 func (t *TabbedPanels) RemoveTab(name string) {
 	t.panels.RemovePanel(name)
+
+	t.updateAll()
+}
+
+func (t *TabbedPanels) RemoveTabIndex(index int) {
+	t.panels.RemovePanelIndex(index)
 
 	t.updateAll()
 }
@@ -99,6 +115,26 @@ func (t *TabbedPanels) HasTab(name string) bool {
 		}
 	}
 	return false
+}
+
+func (t *TabbedPanels) TabIndex(name string) int {
+	t.RLock()
+	defer t.RUnlock()
+
+	return t.panels.PanelIndexFromString(name)
+}
+
+func (t *TabbedPanels) TabName(index int) string {
+	t.RLock()
+	defer t.RUnlock()
+
+	return t.panels.PanelStringFromIndex(index)
+}
+
+func (t *TabbedPanels) MoveTab(srcIndex int, dstIndex int) {
+	t.panels.MovePanelIndex(srcIndex, dstIndex)
+
+	t.updateAll()
 }
 
 // SetCurrentTab sets the currently visible tab.

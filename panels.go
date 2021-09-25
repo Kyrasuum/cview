@@ -446,3 +446,74 @@ func (p *Pages) SwitchToPage(name string) {
 func (p *Pages) GetFrontPage() (name string, item Primitive) {
 	return p.GetFrontPanel()
 }
+
+// InsertPanel adds a new panel with the given name and primitive. If there was
+// previously a panel with the same name, it is overwritten. Leaving the name
+// empty may cause conflicts in other functions so always specify a non-empty
+// name.
+//
+// Visible panels will be drawn in the order they were added (unless that order
+// was changed in one of the other functions). If "resize" is set to true, the
+// primitive will be set to the size available to the Panels primitive whenever
+// the panels are drawn.
+func (p *Panels) InsertPanel(name string, item Primitive, resize, visible bool, index int) {
+	hasFocus := p.HasFocus()
+
+	p.Lock()
+	defer p.Unlock()
+
+	value := &panel{Item: item, Name: name, Resize: resize, Visible: visible}
+	for i, pg := range p.panels {
+		if pg.Name == name {
+			p.RemovePanelIndex(i)
+			break
+		}
+	}
+	p.InsertPanelIndex(value, index)
+	if p.changed != nil {
+		p.Unlock()
+		p.changed()
+		p.Lock()
+	}
+	if hasFocus {
+		p.Unlock()
+		p.Focus(p.setFocus)
+		p.Lock()
+	}
+}
+
+func (p *Panels) PanelIndexFromString(name string) (index int) {
+	p.RLock()
+	defer p.RUnlock()
+
+	for index, panel := range p.panels {
+		if panel.Name == name {
+			return index
+		}
+	}
+	return -1
+}
+
+func (p *Panels) PanelStringFromIndex(index int) (name string) {
+	p.RLock()
+	defer p.RUnlock()
+
+	if index >= 0 && index < len(p.panels) {
+		return p.panels[index].Name
+	}
+	return ""
+}
+
+func (p *Panels) InsertPanelIndex(value *panel, index int) {
+	p.panels = append(p.panels[:index], append([]*panel{value}, p.panels[index:]...)...)
+}
+
+func (p *Panels) RemovePanelIndex(index int) {
+	p.panels = append(p.panels[:index], p.panels[index+1:]...)
+}
+
+func (p *Panels) MovePanelIndex(srcIndex int, dstIndex int) {
+	value := p.panels[srcIndex]
+	p.RemovePanelIndex(srcIndex)
+	p.InsertPanelIndex(value, dstIndex)
+}

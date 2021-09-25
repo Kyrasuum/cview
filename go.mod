@@ -1,4 +1,4 @@
-module code.rocketnine.space/tslocum/cview
+module github.com/Kyrasuum/cview
 
 go 1.12
 
