@@ -152,6 +152,16 @@ func (f *Flex) ResizeItem(p Primitive, fixedSize, proportion int) {
 	}
 }
 
+func (f *Flex) ResizeItemIndex(index int, fixedSize, proportion int) {
+	f.Lock()
+	defer f.Unlock()
+
+	if index >= 0 && index < len(f.items) {
+		f.items[index].FixedSize = fixedSize
+		f.items[index].Proportion = proportion
+	}
+}
+
 // Draw draws this primitive onto the screen.
 func (f *Flex) Draw(screen tcell.Screen) {
 	if !f.GetVisible() {
