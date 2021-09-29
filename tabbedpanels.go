@@ -50,13 +50,13 @@ func NewTabbedPanels() *TabbedPanels {
 	s.SetHighlightBackgroundColor(Styles.PrimaryTextColor)
 	s.SetRegions(true)
 	s.SetScrollable(true)
-	s.SetWrap(true)
-	s.SetWordWrap(true)
+	s.SetWrap(false)
+	s.SetWordWrap(false)
+	s.Box.SetPadding(0, 0, 2, 2)
 	s.SetHighlightedFunc(func(added, removed, remaining []string) {
 		if len(added) == 0 {
 			return
 		}
-
 		s.ScrollToHighlight()
 		t.SetCurrentTab(added[0])
 		if t.setFocus != nil {
@@ -385,6 +385,8 @@ func (t *TabbedPanels) Draw(screen tcell.Screen) {
 	if !t.GetVisible() {
 		return
 	}
+
+	t.Switcher.ScrollToHighlight()
 
 	t.Box.Draw(screen)
 

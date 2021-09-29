@@ -1100,7 +1100,7 @@ func (t *TextView) Draw(screen tcell.Screen) {
 		}
 
 		// If the highlight is offscreen on the left, move it onscreen.
-		if t.posHighlight-t.columnOffset < 0 {
+		if t.posHighlight-t.columnOffset < width/4 {
 			t.columnOffset = t.posHighlight - width/4
 		}
 	}
