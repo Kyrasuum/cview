@@ -1304,6 +1304,12 @@ func (t *TextView) Draw(screen tcell.Screen) {
 					}
 				}
 
+				if textPos >= len(strippedText)-1 {
+					for posX = posX + 1; posX+screenWidth <= width; posX++ {
+						screen.SetContent(x+posX, drawAtY, ' ', nil, style)
+					}
+				}
+
 				// Advance.
 				posX += screenWidth
 				return false

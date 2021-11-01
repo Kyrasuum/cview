@@ -140,6 +140,14 @@ func (n *TreeNode) GetChildren() []*TreeNode {
 	return n.children
 }
 
+// GetParent returns this node's parent.
+func (n *TreeNode) GetParent() *TreeNode {
+	n.RLock()
+	defer n.RUnlock()
+
+	return n.parent
+}
+
 // ClearChildren removes all child nodes from this node.
 func (n *TreeNode) ClearChildren() {
 	n.Lock()
@@ -318,6 +326,8 @@ type TreeView struct {
 
 	// Vertical scroll offset.
 	offsetY int
+	// Horizontal scroll offset.
+	offsetX int
 
 	// If set to true, all node texts will be aligned horizontally.
 	align bool
@@ -525,11 +535,20 @@ func (t *TreeView) SetDoneFunc(handler func(key tcell.Key)) {
 // GetScrollOffset returns the number of node rows that were skipped at the top
 // of the tree view. Note that when the user navigates the tree view, this value
 // is only updated after the tree view has been redrawn.
-func (t *TreeView) GetScrollOffset() int {
+func (t *TreeView) GetScrollOffset() (int, int) {
 	t.RLock()
 	defer t.RUnlock()
 
-	return t.offsetY
+	return t.offsetX, t.offsetY
+}
+
+// Setter for the scroll offset
+func (t *TreeView) SetScrollOffset(offx int, offy int) {
+	t.RLock()
+	defer t.RUnlock()
+
+	t.offsetX = offx
+	t.offsetY = offy
 }
 
 // GetRowCount returns the number of "visible" nodes. This includes nodes which
@@ -855,6 +874,9 @@ func (t *TreeView) Draw(screen tcell.Screen) {
 						backgroundColor = *t.selectedBackgroundColor
 					}
 					style = tcell.StyleDefault.Background(backgroundColor).Foreground(foregroundColor)
+				}
+				for offx := x; offx < width; offx++ {
+					PrintStyle(screen, []byte(" "), offx, posY, 1, AlignLeft, style)
 				}
 				PrintStyle(screen, []byte(node.text), x+node.textX+prefixWidth, posY, width-node.textX-prefixWidth, AlignLeft, style)
 			}
